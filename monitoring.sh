@@ -26,7 +26,7 @@ echo -n "#CPU load: " >> /tmp/monitoringsh--file
 mpstat | grep all | awk '{print $3 "%"}' >> /tmp/monitoringsh--file
 
 echo -n "#Last boot: " >> /tmp/monitoringsh--file
-who | awk '{print $3 " " $4}' >> /tmp/monitoringsh--file
+who -b | awk '{print $3 " " $4}' >> /tmp/monitoringsh--file
 
 echo -n "#LVM use: " >> /tmp/monitoringsh--file
 if command -v lvdisplay &> /dev/null
@@ -46,7 +46,7 @@ users | wc -w >> /tmp/monitoringsh--file
 echo -n "#Network: IP " >> /tmp/monitoringsh--file
 hostname -i | tr -d \\n >> /tmp/monitoringsh--file
 echo -n " (" >> /tmp/monitoringsh--file
-ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n >> /tmp/monitoringsh--file
+/usr/sbin/ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n >> /tmp/monitoringsh--file
 echo ")" >> /tmp/monitoringsh--file
 
 echo -n "#Sudo : " >> /tmp/monitoringsh--file
