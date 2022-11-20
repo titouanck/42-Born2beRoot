@@ -44,7 +44,7 @@ echo -n "#User log: " >> /tmp/monitoringsh--file
 users | wc -w >> /tmp/monitoringsh--file
 
 echo -n "#Network: IP " >> /tmp/monitoringsh--file
-hostname -i | tr -d \\n >> /tmp/monitoringsh--file
+hostname -I | awk '{print $1}' | tr -d \\n >> /tmp/monitoringsh--file
 echo -n " (" >> /tmp/monitoringsh--file
 /usr/sbin/ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n >> /tmp/monitoringsh--file
 echo ")" >> /tmp/monitoringsh--file
