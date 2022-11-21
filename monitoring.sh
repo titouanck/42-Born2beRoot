@@ -13,11 +13,11 @@ memory_usage=$(free -m | grep Mem | awk '{print $3}' | tr -d \\n \
 && printf "%.2f" $(free -m | grep Mem | awk '{print $3/$2 * 100.0}') \
 && echo "%)")
 
-disk_usage=$(df --total -h | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' \
+disk_usage=$(df --total -BM | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' \
 && echo -n "/" \
-&& df --total -h | grep total | awk '{print $2}')
+&& df --total -BG | grep total | awk '{print $2}')
 
-cpu_load=$(printf "%.2f" $(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}' | tr -d \\n) \
+cpu_load=$(printf "%.2f" $(mpstat | grep all | awk '{print $3+$4+$5+$6+$7+$8+$9+$10+$11}' | tr -d \\n) \
 && echo -n "%")
 
 last_boot=$(who -b | awk '{print $3 " " $4}')
