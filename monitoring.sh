@@ -1,57 +1,58 @@
 #!/bin/bash
 
-echo -n "#Architecture: " > /tmp/monitoringsh--file
-uname -a >> /tmp/monitoringsh--file
+architecture=$(uname -a)
 
-echo -n "#CPU physical : " >> /tmp/monitoringsh--file
-nproc --all >> /tmp/monitoringsh--file
+cpu_physical=$(nproc --all)
 
-echo -n "#vCPU : " >> /tmp/monitoringsh--file
-cat /proc/cpuinfo | grep processor | wc -l >> /tmp/monitoringsh--file
+vcpu=$(cat /proc/cpuinfo | grep processor | wc -l)
 
-echo -n "#Memory Usage: " >> /tmp/monitoringsh--file
-free -m | grep Mem | awk '{print $3}' | tr -d \\n >> /tmp/monitoringsh--file
-echo -n "/" >> /tmp/monitoringsh--file
-free -m | grep Mem | awk '{print $2}' | tr -d \\n >> /tmp/monitoringsh--file
-echo -n "MB (" >> /tmp/monitoringsh--file
-printf "%.2f" $(free -m | grep Mem | awk '{print $3/$2 * 100.0}') >> /tmp/monitoringsh--file
-echo "%)" >> /tmp/monitoringsh--file
+memory_usage=$(free -m | grep Mem | awk '{print $3}' | tr -d \\n \
+&& echo -n "/" \
+&& free -m | grep Mem | awk '{print $2}' | tr -d \\n \
+&& echo -n "MB (" \
+&& printf "%.2f" $(free -m | grep Mem | awk '{print $3/$2 * 100.0}') \
+&& echo "%)")
 
-echo -n "#Disk Usage: " >> /tmp/monitoringsh--file
-df --total -h | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' >> /tmp/monitoringsh--file
-echo -n "/" >> /tmp/monitoringsh--file
-df --total -h | grep total | awk '{print $2}' >> /tmp/monitoringsh--file
+disk_usage=$(df --total -h | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' \
+&& echo -n "/" \
+&& df --total -h | grep total | awk '{print $2}')
 
-echo -n "#CPU load: " >> /tmp/monitoringsh--file
-mpstat | grep all | awk '{print $3 "%"}' >> /tmp/monitoringsh--file
+cpu_load=$(printf "%.2f" $(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}' | tr -d \\n) \
+&& echo -n "%")
 
-echo -n "#Last boot: " >> /tmp/monitoringsh--file
-who -b | awk '{print $3 " " $4}' >> /tmp/monitoringsh--file
+last_boot=$(who -b | awk '{print $3 " " $4}')
 
-echo -n "#LVM use: " >> /tmp/monitoringsh--file
-if command -v lvdisplay &> /dev/null
+if grep -q "/dev/mapper" /etc/fstab
 then
-    echo "yes" >> /tmp/monitoringsh--file
+    lvm_use="yes"
 else
-    echo "no" >> /tmp/monitoringsh--file
+    lvm_use="no"
 fi
 
-echo -n "#Connexions TCP : " >> /tmp/monitoringsh--file
-netstat -an | grep tcp | grep ESTABLISHED | wc -l | tr -d \\n >> /tmp/monitoringsh--file
-echo " ESTABLISHED" >> /tmp/monitoringsh--file
+connexions_tcp=$(netstat -an | grep tcp | grep ESTABLISHED | wc -l | tr -d \\n \
+&& echo " ESTABLISHED")
 
-echo -n "#User log: " >> /tmp/monitoringsh--file
-users | wc -w >> /tmp/monitoringsh--file
+user_log=$(users | wc -w)
 
-echo -n "#Network: IP " >> /tmp/monitoringsh--file
-hostname -I | awk '{print $1}' | tr -d \\n >> /tmp/monitoringsh--file
-echo -n " (" >> /tmp/monitoringsh--file
-/usr/sbin/ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n >> /tmp/monitoringsh--file
-echo ")" >> /tmp/monitoringsh--file
+network_ip=$(hostname -I | awk '{print $1}' | tr -d \\n \
+&& echo -n " (" \
+&& /usr/sbin/ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n \
+&& echo ")")
 
-echo -n "#Sudo : " >> /tmp/monitoringsh--file
-cat /var/log/sudo/sudo.log | grep COMMAND | wc -l | tr -d \\n >> /tmp/monitoringsh--file
-echo " cmd" >> /tmp/monitoringsh--file
+sudo=$(cat /var/log/sudo/sudo.log | grep COMMAND | wc -l | tr -d \\n \
+&& echo " cmd")
 
-wall /tmp/monitoringsh--file
-rm -f /tmp/monitoringsh--file
+wall  "
+#Architecture: $architecture
+#CPU physical : $cpu_physical
+#vCPU : $vcpu
+#Memory Usage: $memory_usage
+#Disk Usage: $disk_usage
+#CPU load: $cpu_load
+#Last boot: $last_boot
+#LVM use: $lvm_use
+#Connexions TCP : $connexions_tcp
+#User log: $user_log
+#Network: $network_ip
+#Sudo : $sudo
+"
