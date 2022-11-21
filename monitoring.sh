@@ -39,7 +39,7 @@ network_ip=$(hostname -I | awk '{print $1}' | tr -d \\n \
 && /usr/sbin/ifconfig -a | grep ether | grep Ethernet | awk '{print $2}' | tr -d \\n \
 && echo ")")
 
-sudo=$(cat /var/log/sudo/sudo.log | grep COMMAND | wc -l | tr -d \\n \
+sudo=$(journalctl _COMM=sudo | grep COMMAND | wc -l | tr -d \\n \
 && echo " cmd")
 
 wall  "
