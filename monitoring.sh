@@ -13,9 +13,9 @@ memory_usage=$(free -m | grep Mem | awk '{print $3}' | tr -d \\n \
 && printf "%.2f" $(free -m | grep Mem | awk '{print $3/$2 * 100.0}') \
 && echo "%)")
 
-disk_usage=$(df --total -BM | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' \
+disk_usage=$(df -t ext4 --total -BM | grep total | awk '{print $3}' | tr -d \\n | sed 's/.$//' \
 && echo -n "/" \
-&& df --total -BG | grep total | awk '{print $2}')
+&& df -t ext4 --total -BG | grep total | awk '{print $2}')
 
 cpu_load=$(printf "%.2f" $(mpstat | grep all | awk '{print $3+$4+$5+$6+$7+$8+$9+$10+$11}' | tr -d \\n) \
 && echo -n "%")
